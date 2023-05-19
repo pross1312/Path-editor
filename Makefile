@@ -1,2 +1,6 @@
+CC=g++
+CFLAGS=-Wall -Wextra -std=c++20 `pkg-config --cflags sfml-all`
+LIBS=`pkg-config --libs sfml-all`
+SRC=src/Config.cpp src/CubicCurve.cpp src/main.cpp src/Path.cpp src/Spline.cpp
 default:
-	g++ *.cpp -o PathEditor.exe -l sfml-graphics -l sfml-window -l sfml-system -g -Ofast -funroll-loops -finline-functions -m64
+	$(CC) -o path_editor $(SRC) $(CFLAGS) $(LIBS)	
