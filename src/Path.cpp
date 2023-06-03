@@ -43,13 +43,13 @@ void Path::readFromFile(const char* fName) {
 
 void Path::update() {
     const sf::VertexArray& vArray = _spline._splineArray;
-    int n = vArray.getVertexCount();
+    size_t n = vArray.getVertexCount();
     if (pathShape1.getPointCount() != n-2) {
         pathShape1.setPointCount(n-2);
         pathShape2.setPointCount(n-2);
     }
     int count = 0;
-    for (int i = 1; i < n - 1; i++) {
+    for (size_t i = 1; i < n - 1; i++) {
         sf::Vector2f normal1 = Helper::getNormal(vArray[i-1].position, vArray[i].position);
         sf::Vector2f normal2 = Helper::getNormal(vArray[i].position, vArray[i+1].position);
         sf::Vector2f normal = Helper::addVector(normal1, normal2);
@@ -64,6 +64,7 @@ void Path::update() {
 
 
 void Path::draw(sf::RenderTarget& target, sf::RenderStates state) const {
+    (void)state;
     target.draw(pathShape1);
     target.draw(pathShape2);
     target.draw(_spline);    

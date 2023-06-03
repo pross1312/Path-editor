@@ -3,7 +3,7 @@
 inline const unsigned WIDTH = 1920;
 inline const unsigned HEIGHT = 1080;
 
-int main(int argc, char** argv) {
+int main() {
     Config::read_config("config");
     std::cout << "************************************************" << std::endl;
     std::cout << "Program will read configuration in config file." << std::endl;
@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 
     Config::print_config();
     srand(time(0));
-    sf::RenderWindow _window{ sf::VideoMode(WIDTH, HEIGHT), "PathEditor" };
+    sf::RenderWindow _window{ sf::VideoMode::getFullscreenModes()[0], "PathEditor" };
     sf::Event _event{};
     // Spline spline{initNCurves};
     Path path{};

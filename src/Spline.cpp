@@ -6,7 +6,7 @@ Spline::Spline(): _curves{ Config::nCurves }, _splineArray{ sf::LineStrip, 0 } {
     if (Config::nCurves < 1)
         throw std::invalid_argument("Number of vertex can't be less than 2.");
     nControlPoints = 2 * Config::nCurves;
-    for (int i = 0; i < Config::nCurves; i++) {
+    for (unsigned i = 0; i < Config::nCurves; i++) {
         if (i > 0) {
             _curves[i].start = _curves[i - 1].end;
         }
@@ -51,9 +51,9 @@ std::shared_ptr<sf::RectangleShape>& Spline::getCtrlPoint(unsigned index) {
 
 void Spline::onUserEditing(sf::Event& event, sf::RenderWindow& window) {
     sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
-    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
+    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
         if (current == State::Idle) {
-            for (int i = 0; i < _curves.size(); i++) {
+            for (size_t i = 0; i < _curves.size(); i++) {
                 sf::CircleShape& joint = *_curves[i].start;
                 if (joint.getGlobalBounds().contains(mousePos)) {
                     indexEditing = i;
@@ -61,7 +61,7 @@ void Spline::onUserEditing(sf::Event& event, sf::RenderWindow& window) {
                     break;
                 }
             }
-            for (int i = 0; i < nControlPoints; i++) {
+            for (size_t i = 0; i < nControlPoints; i++) {
                 sf::RectangleShape& ctrlPoint = *getCtrlPoint(i);
                 if (ctrlPoint.getGlobalBounds().contains(mousePos)) {
                     indexEditing = i;
@@ -74,6 +74,7 @@ void Spline::onUserEditing(sf::Event& event, sf::RenderWindow& window) {
             current = State::Idle;
     }
     else if (current == State::JointEditing) {
+//    else if (current == State::JointEditing) {
         sf::CircleShape& joint = *_curves[indexEditing].start;
         joint.setPosition(mousePos);
         update();
@@ -92,7 +93,7 @@ void Spline::update() {
     if (_splineArray.getVertexCount() != (n - 1) * _curves.size() + 2)
         _splineArray.resize((n - 1) * _curves.size() + 2);
 
-    for (int j = 0; j < _curves.size(); j++) {
+    for (size_t j = 0; j < _curves.size(); j++) {
         _curves[j].update();
         const sf::VertexArray& vArray = _curves[j].vArray;
         for (int i = 0; i < n - 1; i++)
@@ -105,11 +106,12 @@ void Spline::update() {
 
 
 void Spline::draw(sf::RenderTarget& target, sf::RenderStates state) const {
+    (void)state;
     sf::VertexArray line{ sf::Lines, 2 };
     target.draw(_splineArray);
-    for (int i = 0; i < _curves.size(); i++) {
-        Helper::drawLine(target, _curves[0].start->getPosition(), _curves[0].startCtrl->getPosition(), Config::line_color);
-        Helper::drawLine(target, _curves[0].end->getPosition(), _curves[0].endCtrl->getPosition(), Config::line_color);
+    for (size_t i = 0; i < _curves.size(); i++) {
+        Helper::drawLine(target, _curves[i].start->getPosition(), _curves[i].startCtrl->getPosition(), Config::line_color);
+        Helper::drawLine(target, _curves[i].end->getPosition(), _curves[i].endCtrl->getPosition(), Config::line_color);
         target.draw(*_curves[i].start);
         target.draw(*_curves[i].startCtrl);
         target.draw(*_curves[i].endCtrl);
@@ -126,13 +128,13 @@ void Spline::readFromFile(std::ifstream& fin) {
     // change number of curves in config and regenerate spline
     fin >> Config::nCurves;
     if (_curves.size() == Config::nCurves) {
-        for (int i = 0; i < Config::nCurves; i++)
+        for (unsigned i = 0; i < Config::nCurves; i++)
             _curves[i].readFromFile(fin);
     }
     else {
         Spline temp{};
         *this = temp;
-        for (int i = 0; i < Config::nCurves; i++)
+        for (unsigned i = 0; i < Config::nCurves; i++)
             _curves[i].readFromFile(fin);
     }
     update();

@@ -43,12 +43,13 @@ void CubicCurve::readFromFile(std::ifstream& fin) {
 }
 
 void CubicCurve::update() {
-    for (int i = 0; i < Config::nVertexs; i++) {
+    for (unsigned i = 0; i < Config::nVertexs; i++) {
         vArray[i].position = this->cubicBezierLerp(1.0f * i / (Config::nVertexs - 1));
         vArray[i].color = Config::curve_color;
     }
 }
 
 void CubicCurve::draw(sf::RenderTarget& target, sf::RenderStates state) const {
+    (void)state;
     target.draw(vArray);
 }

@@ -6,7 +6,7 @@ spline color: 255 255 255 255
 joint color: 130 130 130 130
 ctrl_point color: 130 130 130 130
 line color: 130 130 130 90
-joint radius: 10
-ctrl_point size: 10
+joint radius: 20
+ctrl_point size: 15
 curve color: 255 255 255 255
 number of vertexs: 15
