@@ -2,140 +2,132 @@
 #include "Helper.h"
 #include <exception>
 #include <iostream>
-Spline::Spline(): _curves{ Config::nCurves }, _splineArray{ sf::LineStrip, 0 } {
-    if (Config::nCurves < 1)
-        throw std::invalid_argument("Number of vertex can't be less than 2.");
-    nControlPoints = 2 * Config::nCurves;
-    for (unsigned i = 0; i < Config::nCurves; i++) {
-        if (i > 0) {
-            _curves[i].start = _curves[i - 1].end;
-        }
-        else {
-            _curves[i].start = std::make_shared<sf::CircleShape>(Config::jointRadius);
-            _curves[i].start->setOrigin(Config::jointRadius, Config::jointRadius);
-            _curves[i].start->setFillColor(Config::joint_color);
-            _curves[i].start->setPosition((i + 1) * 100, (i + 1) * 100);
-        }
-        if (i == Config::nCurves - 1) {
-            _curves[i].end = _curves[0].start;
-        }
-        else {
-            _curves[i].end = std::make_shared<sf::CircleShape>(Config::jointRadius);
-            _curves[i].end->setOrigin(Config::jointRadius, Config::jointRadius);
-            _curves[i].end->setFillColor(Config::joint_color);
-            _curves[i].end->setPosition((i + 1) * 100 + 60, (i + 1) * 100 + 60);
+#define PTR std::make_shared
+using Vec2f = sf::Vector2f;
 
-        }
+Spline::Spline():
+    joints      { Config::nJoints   }, // start - end - start - end - ...
+    joint_ctrls { Config::nJoints*2 },
+    vArray      { sf::LineStrip, Config::nJoints * Config::vertexes_per_curve } {
+    size_t w = Config::screen_w;
+    size_t h = Config::screen_h;
+    float angle = M_PI;
+    float angle_step = 2.0*M_PI / Config::nJoints;
+    float radius = 400;
+    float dis = 80;
+    for (size_t i = 0; i < Config::nJoints; i++) {
+        float x = std::cos(angle)*radius + w/2.0f;
+        float y = std::sin(angle)*radius + h/2.0f;
+        joints[i] = Vec2f{ x, y };
+        angle += angle_step;
 
-        _curves[i].startCtrl = std::make_shared<sf::RectangleShape>((sf::Vector2f) { Config::ctrlPointSize, Config::ctrlPointSize });
-        _curves[i].endCtrl = std::make_shared<sf::RectangleShape>((sf::Vector2f) { Config::ctrlPointSize, Config::ctrlPointSize });
-
-
-        _curves[i].startCtrl->setOrigin(Config::ctrlPointSize / 2.0f, Config::ctrlPointSize / 2.0f);
-        _curves[i].startCtrl->setFillColor(Config::ctrl_point_color);
-        _curves[i].startCtrl->setPosition((i + 1) * 100 + 20, (i + 1) * 100 + 20);
-
-        _curves[i].endCtrl->setOrigin(Config::ctrlPointSize / 2.0f, Config::ctrlPointSize / 2.0f);
-        _curves[i].endCtrl->setFillColor(Config::ctrl_point_color);
-        _curves[i].endCtrl->setPosition((i + 1) * 100 + 40, (i + 1) * 100 + 40);
-        _curves[i].update();
+        Vec2f rp = joints[i] - Vec2f{ w/2.0f, h/2.0f };
+        rp = Helper::normalized(rp);
+        rp = Helper::rotated(rp, 90.0f);
+        joint_ctrls[2*i]     = joints[i] + rp*dis;
+        joint_ctrls[2*i + 1] = joints[i] - rp*dis;
     }
     update();
 }
 
-std::shared_ptr<sf::RectangleShape>& Spline::getCtrlPoint(unsigned index) {
-    if (index % 2 == 0)
-        return _curves[index / 2].startCtrl;
-    return _curves[(index - 1) / 2].endCtrl;
-}
-
-void Spline::onUserEditing(sf::Event& event, sf::RenderWindow& window) {
-    sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
-    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-        if (current == State::Idle) {
-            for (size_t i = 0; i < _curves.size(); i++) {
-                sf::CircleShape& joint = *_curves[i].start;
-                if (joint.getGlobalBounds().contains(mousePos)) {
-                    indexEditing = i;
-                    current = State::JointEditing;
-                    break;
-                }
-            }
-            for (size_t i = 0; i < nControlPoints; i++) {
-                sf::RectangleShape& ctrlPoint = *getCtrlPoint(i);
-                if (ctrlPoint.getGlobalBounds().contains(mousePos)) {
-                    indexEditing = i;
-                    current = State::ControlJointEditing;
-                    break;
-                }
-            }
-        }
-        else
-            current = State::Idle;
+void Spline::draw(sf::RenderTarget& target, sf::RenderStates state) const {
+    target.draw(vArray, state);
+    for (const auto& joint_ctrl : joint_ctrls) {
+        Vec2f size{ Config::ctrl_point_size, Config::ctrl_point_size };
+        sf::RectangleShape r(size);
+        r.setOrigin(size / 2.0f);
+        r.setPosition(joint_ctrl);
+        target.draw(r);
     }
-    else if (current == State::JointEditing) {
-//    else if (current == State::JointEditing) {
-        sf::CircleShape& joint = *_curves[indexEditing].start;
-        joint.setPosition(mousePos);
-        update();
-    }
-    else if (current == State::ControlJointEditing) {
-        sf::RectangleShape& ctrlPoint = *getCtrlPoint(indexEditing);
-        ctrlPoint.setPosition(mousePos);
-        update();
+    for (size_t i = 0; i < joints.size(); i++) {
+        sf::CircleShape c(Config::joint_radius);
+        c.setOrigin(Config::joint_radius, Config::joint_radius);
+        c.setPosition(joints[i]);
+        c.setFillColor(Config::joint_color);
+        target.draw(c, state);
+        Helper::draw_line(target, joints[i], joint_ctrls[2*i]  , Config::line_color);
+        Helper::draw_line(target, joints[i], joint_ctrls[2*i+1], Config::line_color);
     }
 }
 
 void Spline::update() {
-
-    int n = Config::nVertexs;
-
-    if (_splineArray.getVertexCount() != (n - 1) * _curves.size() + 2)
-        _splineArray.resize((n - 1) * _curves.size() + 2);
-
-    for (size_t j = 0; j < _curves.size(); j++) {
-        _curves[j].update();
-        const sf::VertexArray& vArray = _curves[j].vArray;
-        for (int i = 0; i < n - 1; i++)
-            _splineArray[(j * (n - 1)) + i + 1] = vArray[i];
-    }
-    _splineArray[0] = (*--_curves.end()).vArray[n - 1];
-    _splineArray[_splineArray.getVertexCount() - 1] = _curves[0].vArray[0];
-}
-
-
-
-void Spline::draw(sf::RenderTarget& target, sf::RenderStates state) const {
-    (void)state;
-    sf::VertexArray line{ sf::Lines, 2 };
-    target.draw(_splineArray);
-    for (size_t i = 0; i < _curves.size(); i++) {
-        Helper::drawLine(target, _curves[i].start->getPosition(), _curves[i].startCtrl->getPosition(), Config::line_color);
-        Helper::drawLine(target, _curves[i].end->getPosition(), _curves[i].endCtrl->getPosition(), Config::line_color);
-        target.draw(*_curves[i].start);
-        target.draw(*_curves[i].startCtrl);
-        target.draw(*_curves[i].endCtrl);
+    for (size_t i = 0; i < Config::nJoints; i++) {
+        Vec2f start, end;
+        auto ctrls = get_curve_ctrl_point(i);
+        start = joints[i];
+        end = i == Config::nJoints-1 ? joints[0] : joints[i+1];
+        for (size_t vertex = 0; vertex < Config::vertexes_per_curve; vertex++) {
+            vArray[i*Config::vertexes_per_curve + vertex].position = Helper::cubic_bezier_lerp(
+                    start, end, ctrls.first, ctrls.second,
+                    1.0f * vertex / (Config::vertexes_per_curve - 1));
+        }
     }
 }
-
-void Spline::writeToFile(std::ofstream& fout) {
-    fout << _curves.size() << "\n";
-    for (CubicCurve& c : _curves)
-        c.writeToFile(fout);
+enum SplineObjectType {
+    Joint = 0,
+    Joint_Ctrl,
+    None,
+};
+void Spline::on_user_editting(sf::Event& event, sf::RenderWindow& window) {
+    static size_t on_moving_index = 0;
+    static SplineObjectType on_moving_type = None;
+    Vec2f mouse_pos = (Vec2f)sf::Mouse::getPosition(window);
+    if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+        for (size_t i = 0; i < joints.size(); i++) {
+            if (Helper::distance(joints[i], mouse_pos) <= Config::joint_radius) {
+                on_moving_index = i;
+                on_moving_type = Joint;
+            }
+        }
+        if (on_moving_type == None) {
+            for (size_t i = 0; i < joint_ctrls.size(); i++) {
+                Vec2f size(Config::ctrl_point_size, Config::ctrl_point_size);
+                sf::Rect<float> rect(joint_ctrls[i] - size/2.0f, size);
+                if (rect.contains(mouse_pos)) {
+                    on_moving_index = i;
+                    on_moving_type = Joint_Ctrl;
+                }
+            }
+        }
+    }
+    else if (on_moving_type != None && event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+        on_moving_type = None;
+    }
+    if (on_moving_type == Joint) {
+        Vec2f vel                         = mouse_pos - joints[on_moving_index];
+        joints[on_moving_index]           = mouse_pos;
+        joint_ctrls[2*on_moving_index]   += vel;
+        joint_ctrls[2*on_moving_index+1] += vel;
+        update();
+    }
+    else if (on_moving_type == Joint_Ctrl) {
+        auto joint                    = joints[on_moving_index/2];
+        size_t opposite_index         = on_moving_index + (on_moving_index%2 == 0 ? 1 : -1);
+        float opposite_joint_ctrl_len = Helper::distance(joint, joint_ctrls[opposite_index]);
+        joint_ctrls[on_moving_index]  = mouse_pos;
+        joint_ctrls[opposite_index]   = joint + Helper::normalized(joint - mouse_pos) * opposite_joint_ctrl_len;
+        update();
+    }
 }
 
-void Spline::readFromFile(std::ifstream& fin) {
-    // change number of curves in config and regenerate spline
-    fin >> Config::nCurves;
-    if (_curves.size() == Config::nCurves) {
-        for (unsigned i = 0; i < Config::nCurves; i++)
-            _curves[i].readFromFile(fin);
-    }
-    else {
-        Spline temp{};
-        *this = temp;
-        for (unsigned i = 0; i < Config::nCurves; i++)
-            _curves[i].readFromFile(fin);
-    }
-    update();
-}
+// void Spline::writeToFile(std::ofstream& fout) {
+//     fout << _curves.size() << "\n";
+//     for (CubicCurve& c : _curves)
+//         c.writeToFile(fout);
+// }
+
+// void Spline::readFromFile(std::ifstream& fin) {
+//     // change number of curves in config and regenerate spline
+//     fin >> Config::nJoints;
+//     if (_curves.size() == Config::nJoints) {
+//         for (unsigned i = 0; i < Config::nJoints; i++)
+//             _curves[i].readFromFile(fin);
+//     }
+//     else {
+//         Spline temp{};
+//         *this = temp;
+//         for (unsigned i = 0; i < Config::nJoints; i++)
+//             _curves[i].readFromFile(fin);
+//     }
+//     update();
+// }

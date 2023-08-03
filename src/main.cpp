@@ -1,7 +1,5 @@
 #include <iostream>
 #include "Path.h"
-inline const unsigned WIDTH = 1920;
-inline const unsigned HEIGHT = 1080;
 
 int main() {
     Config::read_config("config");
@@ -14,23 +12,17 @@ int main() {
 
     Config::print_config();
     srand(time(0));
-    sf::RenderWindow _window{ sf::VideoMode::getFullscreenModes()[0], "PathEditor" };
-    sf::Event _event{};
-    // Spline spline{initNCurves};
-    Path path{};
-    while (_window.isOpen()) {
-        while (_window.pollEvent(_event)) {
-            if (_event.type == sf::Event::Closed)
-                _window.close();
-            path.onUserEditing(_event, _window);
+    sf::RenderWindow window{ sf::VideoMode(Config::screen_w, Config::screen_h), "PathEditor" };
+    sf::Event event{};
+    Path path;
+    while (window.isOpen()) {
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed)
+                window.close();
+            path.on_user_editting(event, window);
         }
-        
-
-        _window.clear(Config::back_ground);
-
-        _window.draw(path);
-
-
-        _window.display();
+        window.clear();
+        window.draw(path);
+        window.display();
     }
 }

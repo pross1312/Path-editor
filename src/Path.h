@@ -7,15 +7,15 @@ public:
 	Path();
 	~Path() = default;
 	void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
-	void onUserEditing(sf::Event& event, sf::RenderWindow& window);
-	void writeToFile(const char* fName);
-	void readFromFile(const char* fName);
+	void on_user_editting(sf::Event& event, sf::RenderWindow& window);
+	// void writeToFile(const char* fName);
+	// void readFromFile(const char* fName);
 	void update();
 
 
 private:
 	bool onEditing1 = true;
-	Spline _spline;
-	sf::ConvexShape pathShape1, pathShape2;
+	Spline spline;
+	sf::ConvexShape outer_shape, inner_shape;
 
 };
