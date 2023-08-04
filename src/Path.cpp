@@ -1,5 +1,6 @@
 #include "Path.h"
 #include "Helper.h"
+#include <algorithm>
 
 Path::Path():
     spline{},
@@ -27,11 +28,6 @@ void Path::update() {
         outer_shape.setPoint(i, cur_vertex + normal*Config::path_width);
         inner_shape.setPoint(i, cur_vertex - normal*Config::path_width);
     }
-}
-
-void Path::on_user_editting(sf::Event& event, sf::RenderWindow& window) {
-    spline.on_user_editting(event, window);
-    update();
 }
 
 // void Path::writeToFile(const char* fName) {

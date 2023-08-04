@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Path.h"
+#include "PathEditor.h"
 
 int main() {
     Config::read_config("config");
@@ -15,11 +15,12 @@ int main() {
     sf::RenderWindow window{ sf::VideoMode(Config::screen_w, Config::screen_h), "PathEditor" };
     sf::Event event{};
     Path path;
+    PathEditor path_editor{&path};
     while (window.isOpen()) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-            path.on_user_editting(event, window);
+            path_editor.handle_event(event, window);
         }
         window.clear();
         window.draw(path);
