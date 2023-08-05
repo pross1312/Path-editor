@@ -74,3 +74,27 @@ public:
         return Vec2<T>{ x, y };
     }
 };
+
+inline std::istream& operator>>(std::istream& in, sf::Color& c) {
+    int temp;
+    in >> temp; c.r = sf::Uint8(temp);
+    in >> temp; c.g = sf::Uint8(temp);
+    in >> temp; c.b = sf::Uint8(temp);
+    in >> temp; c.a = sf::Uint8(temp);
+    return in;
+}
+
+inline std::ostream& operator<<(std::ostream& out, const sf::Color& c) {
+    out << int(c.r) << " " << int(c.g) << " " << int(c.b) << " " << int(c.a);
+    return out;
+}
+
+inline std::istream& operator>>(std::istream& in, sf::Vector2f& c) {
+    in >> c.x >> c.y;
+    return in;
+}
+
+inline std::ostream& operator<<(std::ostream& out, const sf::Vector2f& c) {
+    out << c.x << " " << c.y;
+    return out;
+}

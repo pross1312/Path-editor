@@ -7,8 +7,8 @@ public:
 	Path();
 	~Path() = default;
 	void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
-	// void writeToFile(const char* fName);
-	// void readFromFile(const char* fName);
+	void save(const char* fName);
+	void load(const char* fName);
 	void update();
 
 	Spline spline;
