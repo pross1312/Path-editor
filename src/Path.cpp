@@ -19,6 +19,7 @@ void Path::draw(sf::RenderTarget& target, sf::RenderStates state) const {
 }
 
 void Path::update() {
+    spline.update();
     size_t nVertices = spline.vArray.getVertexCount();
     if (outer_shape.getPointCount() != nVertices) outer_shape.setPointCount(nVertices);
     if (inner_shape.getPointCount() != nVertices) inner_shape.setPointCount(nVertices);

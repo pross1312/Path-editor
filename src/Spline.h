@@ -38,9 +38,7 @@ public:
     void write(std::ofstream& fout);
     inline std::pair<Vec2f, Vec2f> get_curve_ctrl_point(size_t i) const {
         assert(i < joints.size());
-        if (i != joints.size()-1)
-            return std::make_pair( joint_ctrls[2*i + 1], joint_ctrls[2*(i+1)] );
-        return std::make_pair( joint_ctrls[2*i + 1], joint_ctrls[0] );
+        return std::make_pair( joint_ctrls[2*i + 1], joint_ctrls[2*((i+1)%joints.size())] );
     }
     size_t vertices_per_curve;
     std::vector<Vec2f> joints, joint_ctrls;

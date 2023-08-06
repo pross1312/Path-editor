@@ -1,10 +1,9 @@
 #include <iostream>
 #include "PathEditor.h"
 Config config;
-
+bool on_control = false;
 int main() {
     config.read("config");
-    config.nJoints = 9;
     config.print();
     std::cout << "************************************************" << std::endl;
     std::cout << "Program will read configuration in config file." << std::endl;
@@ -27,12 +26,21 @@ int main() {
                 window.close();
                 break;
             case sf::Event::KeyPressed:
-                if (event.key.code == sf::Keyboard::S) {
+                if (event.key.code == sf::Keyboard::LControl) {
+                    on_control = true;
+                }
+                else if (event.key.code == sf::Keyboard::S && on_control) {
                     path.save("Testingpath");
                 }
-                else if (event.key.code == sf::Keyboard::L) {
+                else if (event.key.code == sf::Keyboard::L && on_control) {
                     path.load("Testingpath");
                 }
+                break;
+            case sf::Event::KeyReleased:
+                if (event.key.code == sf::Keyboard::LControl) {
+                    on_control = false;
+                }
+                break;
             default: break;
             }
             path_editor.handle_event(event, window);

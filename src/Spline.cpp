@@ -37,17 +37,20 @@ void Spline::draw(sf::RenderTarget& target, sf::RenderStates state) const {
 }
 
 void Spline::update() {
-    if (vArray.getVertexCount() != joints.size()) vArray.resize(joints.size() * vertices_per_curve);
-    for (size_t i = 0; i < config.nJoints; i++) {
+    if (vArray.getVertexCount() != joints.size()*vertices_per_curve) {
+        vArray.resize(joints.size() * vertices_per_curve);
+    }
+    for (size_t i = 0; i < joints.size(); i++) {
         Vec2f start, end;
         auto ctrls = get_curve_ctrl_point(i);
+        std::cout << ctrls.first << "\n" << ctrls.second << "\n";
         start = joints[i];
-        end = i == config.nJoints-1 ? joints[0] : joints[i+1];
-        for (size_t vertex = 0; vertex < config.vertexes_per_curve; vertex++) {
-            size_t v_index = i*config.vertexes_per_curve + vertex;
+        end = i == joints.size()-1 ? joints[0] : joints[i+1];
+        for (size_t vertex = 0; vertex < vertices_per_curve; vertex++) {
+            size_t v_index = i*vertices_per_curve + vertex;
             vArray[v_index].position = Helper::cubic_bezier_lerp(
                     start, end, ctrls.first, ctrls.second,
-                    1.0f * vertex / (config.vertexes_per_curve - 1));
+                    1.0f * vertex / (vertices_per_curve - 1));
             vArray[v_index].color = config.spline_color;
         }
     }

@@ -1,11 +1,22 @@
 #pragma once
 #include "Path.h"
 
+#define ON_EDITING_OBJECT_COLOR 0xff7279ff
 
 enum SplineObjectType {
     Joint = 0,
     Joint_Ctrl,
+    Vertex,
     None,
+};
+enum EdittingMode {
+    Moving,
+    Adding,
+    Viewing,
+};
+struct EdittingObject {
+    size_t index = 0;
+    SplineObjectType type = None;
 };
 
 struct PathEditor: public sf::Drawable {
@@ -14,9 +25,11 @@ struct PathEditor: public sf::Drawable {
     void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
     void update_joint(Vec2f new_position);
     void update_ctrl_joint(Vec2f new_position);
+    void handle_moving_event(sf::Event& event, sf::RenderWindow& window);
+    void handle_adding_event(sf::Event& event, sf::RenderWindow& window);
 
-    bool on_editting = true;
-    size_t on_moving_index          = 0;
-    SplineObjectType on_moving_type = None;
+
+    EdittingMode mode = Moving;
+    EdittingObject object;
     Path* current_editing_path;
 };
