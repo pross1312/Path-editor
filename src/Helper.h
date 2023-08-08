@@ -84,7 +84,7 @@ namespace Helper {
 
     inline bool contains(const sf::ConvexShape& v, const Vec2f& position) {
         size_t n = v.getPointCount();
-        Vec2f ref_point{position.x, -1};
+        Vec2f ref_point{position.x, -1e9};
         int count = 0;
         for (size_t i = 0; i < n - 1; i++) {
             if (line_intersect(v.getPoint(i), v.getPoint(i + 1), position, ref_point))
@@ -93,6 +93,13 @@ namespace Helper {
         if (line_intersect(v.getPoint(0), v.getPoint(n - 1), position, ref_point))
             count++;
         return count%2 == 1;
+    }
+    // take window.view into account when its center is moved
+    inline Vec2f to_global_position(const sf::RenderTarget& target, Vec2f position) {
+        auto view = target.getView();
+        auto center = view.getCenter();
+        auto size = view.getSize();
+        return position + (center - size/2.0f);
     }
 };
 
@@ -118,4 +125,20 @@ inline std::istream& operator>>(std::istream& in, sf::Vector2f& c) {
 inline std::ostream& operator<<(std::ostream& out, const sf::Vector2f& c) {
     out << c.x << " " << c.y;
     return out;
+}
+
+template<typename T>
+Vec2<T> operator*(const Vec2<T>& a, const Vec2<T>& b) {
+    return Vec2<T>(
+        a.x * b.x,
+        a.y * b.y
+    );
+}
+
+template<typename T>
+Vec2<T> operator/(const Vec2<T>& a, const Vec2<T>& b) {
+    return Vec2<T>(
+        a.x / b.x,
+        a.y / b.y
+    );
 }

@@ -53,3 +53,15 @@ void Path::load(const char* fName) {
     fin.close();
     update();
 }
+void Path::zoom(Vec2f center, float ratio) {
+    config.joint_radius    *= ratio;
+    config.path_width      *= ratio;
+    config.ctrl_point_size *= ratio;
+    for (auto& joint : spline.joints) {
+        joint = center + (joint - center) * ratio;
+    }
+    for (auto& joint_ctrl : spline.joint_ctrls) {
+        joint_ctrl = center + (joint_ctrl - center)*ratio;
+    }
+    update();
+}

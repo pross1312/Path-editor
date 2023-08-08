@@ -3,37 +3,38 @@
 extern Config config;
 
 void PathEditor::handle_moving_event(sf::Event& event, sf::RenderWindow& window) {
-    Vec2f mouse_pos   = (Vec2f)sf::Mouse::getPosition(window);
+    static bool on_clicked = false;
     auto& joints      = current_editing_path->spline.joints;
     auto& joint_ctrls = current_editing_path->spline.joint_ctrls;
-    switch (event.type) {
-    case sf::Event::MouseButtonPressed:
-        if (event.mouseButton.button == sf::Mouse::Left) {
-            for (size_t i = 0; i < joints.size(); i++) {
-                if (Helper::distance(joints[i], mouse_pos) <= config.joint_radius) {
-                    object.index = i;
-                    object.type = Joint;
-                }
-            }
-            if (object.type == None) {
-                for (size_t i = 0; i < joint_ctrls.size(); i++) {
-                    Vec2f size(config.ctrl_point_size, config.ctrl_point_size);
-                    sf::Rect<float> rect(joint_ctrls[i] - size/2.0f, size);
-                    if (rect.contains(mouse_pos)) {
-                        object.index = i;
-                        object.type = Joint_Ctrl;
-                    }
-                }
+    Vec2f mouse_pos   = Helper::to_global_position(window, (Vec2f)sf::Mouse::getPosition(window));
+    if (!on_clicked) object.type = None;
+    for (size_t i = 0; i < joints.size(); i++) {
+        if (Helper::distance(joints[i], mouse_pos) <= config.joint_radius) {
+            object.index = i;
+            object.type = Joint;
+        }
+    }
+    if (object.type == None) {
+        for (size_t i = 0; i < joint_ctrls.size(); i++) {
+            Vec2f size(config.ctrl_point_size, config.ctrl_point_size);
+            sf::Rect<float> rect(joint_ctrls[i] - size/2.0f, size);
+            if (rect.contains(mouse_pos)) {
+                object.index = i;
+                object.type = Joint_Ctrl;
             }
         }
+    }
+    switch (event.type) {
+    case sf::Event::MouseButtonPressed:
+        if (event.mouseButton.button == sf::Mouse::Left) on_clicked = true;
         break;
     case sf::Event::MouseButtonReleased:
-        if (object.type != None && event.mouseButton.button == sf::Mouse::Left) object.type = None;
+        on_clicked = false;
         break;
     default: break;
     }
-    if (object.type == Joint) update_joint(mouse_pos);
-    else if (object.type == Joint_Ctrl) update_ctrl_joint(mouse_pos);
+    if (on_clicked && object.type == Joint) update_joint(mouse_pos);
+    else if (on_clicked && object.type == Joint_Ctrl) update_ctrl_joint(mouse_pos);
 }
 
 void PathEditor::handle_adding_event(sf::Event& event, sf::RenderWindow& window) {
@@ -59,7 +60,7 @@ void PathEditor::handle_adding_event(sf::Event& event, sf::RenderWindow& window)
         break;
     default: break;
     }
-    Vec2f mouse_pos   = (Vec2f)sf::Mouse::getPosition(window);
+    Vec2f mouse_pos = Helper::to_global_position(window, (Vec2f)sf::Mouse::getPosition(window));
     if (current_editing_path->contains(mouse_pos)) {
         float min_dis = 1e10;
         for (size_t i = 0; i < vArray.getVertexCount(); i++) {
@@ -141,17 +142,23 @@ void PathEditor::draw(sf::RenderTarget& target, sf::RenderStates state) const {
             target.draw(r, state);
         }
         for (size_t i = 0; i < joints.size(); i++) {
+            size_t index_for_type = object.type == Joint ? object.index : object.index/2;
             sf::CircleShape c(config.joint_radius);
             c.setOrigin(config.joint_radius, config.joint_radius);
             c.setPosition(joints[i]);
-            if ((object.type == Joint      && i == object.index  ) ||
-                (object.type == Joint_Ctrl && i == object.index/2))
+            if (object.type != None && i == index_for_type)
                 c.setFillColor(sf::Color(ON_EDITING_OBJECT_COLOR));
             else
                 c.setFillColor(config.joint_color);
             target.draw(c, state);
-            Helper::draw_line(target, joints[i], joint_ctrls[2*i]  , config.line_color);
-            Helper::draw_line(target, joints[i], joint_ctrls[2*i+1], config.line_color);
+            Helper::draw_line(target,
+                    joints[i],
+                    joint_ctrls[2*i],
+                    object.type == None || index_for_type != i ? config.line_color : sf::Color(ON_EDITING_OBJECT_COLOR));
+            Helper::draw_line(target,
+                    joints[i],
+                    joint_ctrls[2*i+1],
+                    object.type == None || index_for_type != i ? config.line_color : sf::Color(ON_EDITING_OBJECT_COLOR));
         }
     } break;
     default: break;

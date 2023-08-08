@@ -43,7 +43,6 @@ void Spline::update() {
     for (size_t i = 0; i < joints.size(); i++) {
         Vec2f start, end;
         auto ctrls = get_curve_ctrl_point(i);
-        std::cout << ctrls.first << "\n" << ctrls.second << "\n";
         start = joints[i];
         end = i == joints.size()-1 ? joints[0] : joints[i+1];
         for (size_t vertex = 0; vertex < vertices_per_curve; vertex++) {
