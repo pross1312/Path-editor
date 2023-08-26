@@ -2,8 +2,6 @@
 #include <sstream>
 #include <fstream>
 
-
-
 void Config::read(const char* filePath) {
     std::ifstream fin(filePath);
     if (!fin.is_open()) {

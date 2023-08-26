@@ -12,6 +12,7 @@ Path::Path():
         inner_shape.setFillColor(config.back_ground);
         update();
 }
+
 void Path::draw(sf::RenderTarget& target, sf::RenderStates state) const {
     target.draw(outer_shape, state);
     target.draw(inner_shape, state);
@@ -53,6 +54,7 @@ void Path::load(const char* fName) {
     fin.close();
     update();
 }
+
 void Path::zoom(Vec2f center, float ratio) {
     config.joint_radius    *= ratio;
     config.path_width      *= ratio;
