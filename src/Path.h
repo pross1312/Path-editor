@@ -1,20 +1,26 @@
 #pragma once
 #include "Spline.h"
-extern Config config;
 
-class Path: public sf::Drawable {
-public:
-	Path();
+struct Path: public sf::Drawable {
+	Path(float w, uint32_t c);
 	~Path() = default;
-    inline bool contains(Vec2f point) const {
-        return Helper::contains(outer_shape, point) && !Helper::contains(inner_shape, point);
+    bool contains(Vec2f point) const;
+	void draw(sf::RenderTarget& target, sf::RenderStates state) const override {
+        target.draw(vArray, state);
+        target.draw(spline, state);
     }
-	void draw(sf::RenderTarget& target, sf::RenderStates state) const override;
 	void save(const char* fName);
 	void load(const char* fName);
     void zoom(Vec2f center, float ratio);
 	void update();
+    inline std::pair<sf::Vector2f, float> get_start_param() const { // return position and rotation needed
+        const auto a = spline.vArray[0].position;
+        const auto b = spline.vArray[1].position;
+        return std::make_pair(a, Helper::angle_of_2_vec(b-a, Vec2f(1.0f, 0.0f)) * 180 / M_PI);
+    }
 
+    float width;
+    uint32_t color;
 	Spline spline;
-	sf::ConvexShape outer_shape, inner_shape;
+    sf::VertexArray vArray;
 };

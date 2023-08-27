@@ -1,8 +1,8 @@
 #include <iostream>
 #include "PathEditor.h"
+#include "Config.h"
 #define SCROLL_SENSITIVITY 20
 #define FPS 60
-#define DELTA_TIME  1.0f/FPS
 #define ZOOM_FACTOR 0.1f
 #define FONT_PATH "./VictorMono.ttf"
 
@@ -17,10 +17,10 @@ int main() {
     config.print();
 
     srand(time(0));
-    Path path;
+    Path path(config.path_width, 0x485965ff);
     PathEditor path_editor(&path);
     sf::RenderWindow window(sf::VideoMode(config.screen_w, config.screen_h), "PathEditor");
-    window.setFramerateLimit(30);
+    window.setFramerateLimit(FPS);
     sf::Event event;
     sf::Font font;
     font.loadFromFile(FONT_PATH);
@@ -41,12 +41,13 @@ int main() {
                 auto& wheel_event = event.mouseWheelScroll;
                 if (wheel_event.wheel == sf::Mouse::VerticalWheel) {
                     Vec2f mouse_pos = (Vec2f)sf::Mouse::getPosition(window);
-                    path.zoom(Helper::to_global_position(window, mouse_pos), 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
+                    path.zoom(Helper::to_world(window, mouse_pos), 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
                 }
             } break;
             case sf::Event::MouseButtonPressed: {
+                Vec2f mouse_pos = (Vec2f)sf::Mouse::getPosition(window);
                 if (event.mouseButton.button == sf::Mouse::Right)
-                    start_drag = (Vec2f)sf::Mouse::getPosition(window);
+                    start_drag = mouse_pos;
             } break;
             case sf::Event::MouseButtonReleased: {
                 if (event.mouseButton.button == sf::Mouse::Right)
@@ -60,7 +61,7 @@ int main() {
                 case sf::Keyboard::S:
                     if (on_control) path.save("Testingpath");
                     break;
-                case sf::Keyboard::L:
+                case sf::Keyboard::O:
                     if (on_control) path.load("Testingpath");
                     break;
                 case sf::Keyboard::T:
@@ -89,16 +90,18 @@ int main() {
         window.clear();
         window.draw(path);
         window.draw(path_editor);
-        if (show_help) draw_help(window, font, Helper::to_global_position(window, Vec2f(0, 0)));
+        if (show_help) draw_help(window, font, Helper::to_world(window, Vec2f(0, 0)));
         window.display();
     }
 }
 
 inline void draw_help(sf::RenderTarget& target, const sf::Font& font, Vec2f position) {
     sf::Text text("\
-t: toogle help\n\
-a: switch to adding mode\n\
-s: switch to editing mode\n\
+  t: toogle help\n\
+  a: switch to adding mode\n\
+  s: switch to editing mode\n\
+C-s: save to file\n\
+C-o: open file\n\
 Hold mouse right button and drag to move screen\n\
 Scroll up/down to zoom", font);
     text.setPosition(position);

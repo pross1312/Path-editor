@@ -1,4 +1,5 @@
 #include "PathEditor.h"
+#include "Config.h"
 
 extern Config config;
 
@@ -6,7 +7,7 @@ void PathEditor::handle_moving_event(sf::Event& event, sf::RenderWindow& window)
     static bool on_clicked = false;
     auto& joints      = current_editing_path->spline.joints;
     auto& joint_ctrls = current_editing_path->spline.joint_ctrls;
-    Vec2f mouse_pos   = Helper::to_global_position(window, (Vec2f)sf::Mouse::getPosition(window));
+    Vec2f mouse_pos   = Helper::to_world(window, (Vec2f)sf::Mouse::getPosition(window));
     if (!on_clicked) object.type = None;
     for (size_t i = 0; i < joints.size(); i++) {
         if (Helper::distance(joints[i], mouse_pos) <= config.joint_radius) {
@@ -60,7 +61,7 @@ void PathEditor::handle_adding_event(sf::Event& event, sf::RenderWindow& window)
         break;
     default: break;
     }
-    Vec2f mouse_pos = Helper::to_global_position(window, (Vec2f)sf::Mouse::getPosition(window));
+    Vec2f mouse_pos = Helper::to_world(window, (Vec2f)sf::Mouse::getPosition(window));
     if (current_editing_path->contains(mouse_pos)) {
         float min_dis = 1e10;
         for (size_t i = 0; i < vArray.getVertexCount(); i++) {
