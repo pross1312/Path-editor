@@ -115,11 +115,22 @@ namespace Helper {
     inline void zoom(sf::RenderTarget& target, Vec2f center, float ratio) {
         (void)center;
         auto view = target.getView();
-        // view.move((center - view.getCenter())*ratio);
         view.zoom(ratio);
+        view.move((center - view.getCenter())*ratio);
         target.setView(view);
     }
 
+    // https://github.com/SFML/SFML/wiki/Source:-Zoom-View-At-%28specified-pixel%29
+    inline void zoomViewAt(sf::RenderTarget& window, sf::Vector2i pixel, float zoom) {
+        const sf::Vector2f beforeCoord{ window.mapPixelToCoords(pixel) };
+        sf::View view{ window.getView() };
+        view.zoom(zoom);
+        window.setView(view);
+        const sf::Vector2f afterCoord{ window.mapPixelToCoords(pixel) };
+        const sf::Vector2f offsetCoords{ beforeCoord - afterCoord };
+        view.move(offsetCoords);
+        window.setView(view);
+    }
 }
 
 inline std::istream& operator>>(std::istream& in, sf::Color& c) {

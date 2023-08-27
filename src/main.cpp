@@ -7,7 +7,6 @@
 #define FONT_PATH "./VictorMono.ttf"
 
 inline void draw_help(sf::RenderTarget& target, const sf::Font& font, sf::Vector2i position);
-inline float zoom_ratio = 1.0f;
 Config config;
 inline bool on_control = false;
 inline bool show_help = true;
@@ -41,8 +40,7 @@ int main() {
                 auto& wheel_event = event.mouseWheelScroll;
                 if (wheel_event.wheel == sf::Mouse::VerticalWheel) {
                     auto mouse_pos = sf::Mouse::getPosition(window);
-                    Helper::zoom(window, window.mapPixelToCoords(mouse_pos), 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
-                    zoom_ratio = 1.0f + wheel_event.delta * ZOOM_FACTOR;
+                    Helper::zoomViewAt(window, mouse_pos, 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
                 }
             } break;
             case sf::Event::MouseButtonPressed: {
@@ -105,6 +103,9 @@ C-s: save to file\n\
 C-o: open file\n\
 Hold mouse right button and drag to move screen\n\
 Scroll up/down to zoom", font);
+    auto tmp_view = target.getView();
+    target.setView(target.getDefaultView());
     text.setPosition(target.mapPixelToCoords(position));
     target.draw(text);
+    target.setView(tmp_view);
 }
