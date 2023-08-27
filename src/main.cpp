@@ -40,7 +40,7 @@ int main() {
                 auto& wheel_event = event.mouseWheelScroll;
                 if (wheel_event.wheel == sf::Mouse::VerticalWheel) {
                     auto mouse_pos = sf::Mouse::getPosition(window);
-                    Helper::zoomViewAt(window, mouse_pos, 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
+                    Helper::zoom(window, mouse_pos, 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
                 }
             } break;
             case sf::Event::MouseButtonPressed: {

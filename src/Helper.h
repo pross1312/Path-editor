@@ -112,14 +112,6 @@ namespace Helper {
         return Vec2<T>{ x, y };
     }
 
-    inline void zoom(sf::RenderTarget& target, Vec2f center, float ratio) {
-        (void)center;
-        auto view = target.getView();
-        view.zoom(ratio);
-        view.move((center - view.getCenter())*ratio);
-        target.setView(view);
-    }
-
     // https://github.com/SFML/SFML/wiki/Source:-Zoom-View-At-%28specified-pixel%29
     inline void zoomViewAt(sf::RenderTarget& window, sf::Vector2i pixel, float zoom) {
         const sf::Vector2f beforeCoord{ window.mapPixelToCoords(pixel) };
