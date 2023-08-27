@@ -113,7 +113,7 @@ namespace Helper {
     }
 
     // https://github.com/SFML/SFML/wiki/Source:-Zoom-View-At-%28specified-pixel%29
-    inline void zoomViewAt(sf::RenderTarget& window, sf::Vector2i pixel, float zoom) {
+    inline void zoom(sf::RenderTarget& window, sf::Vector2i pixel, float zoom) {
         const sf::Vector2f beforeCoord{ window.mapPixelToCoords(pixel) };
         sf::View view{ window.getView() };
         view.zoom(zoom);
