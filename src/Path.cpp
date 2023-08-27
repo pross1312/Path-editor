@@ -38,6 +38,8 @@ void Path::save(const char* fName) {
     std::ofstream fout(fName, std::ios::binary | std::ios::out);
     if (!fout.is_open())
         throw std::runtime_error("Can't open file to write.");
+    fout.write((char*)&width, sizeof(width));
+    fout.write((char*)&color, sizeof(color));
     fout << spline;
     fout.close();
 }
@@ -46,13 +48,15 @@ void Path::load(const char* fName) {
     std::ifstream fin(fName, std::ios::binary | std::ios::in);
     if (!fin.is_open())
         throw std::runtime_error("Can't open file to read");
+    fin.read((char*)&width, sizeof(width));
+    fin.read((char*)&color, sizeof(color));
     fin >> spline;
     fin.close();
     update();
 }
 
 void Path::zoom(Vec2f center, float ratio) {
-    width                  *= ratio;
+    width *= ratio;
     for (auto& joint : spline.joints) {
         joint = center + (joint - center) * ratio;
     }

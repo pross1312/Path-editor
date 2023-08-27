@@ -6,8 +6,8 @@
 #define ZOOM_FACTOR 0.1f
 #define FONT_PATH "./VictorMono.ttf"
 
-inline void draw_help(sf::RenderTarget& target, const sf::Font& font, Vec2f position);
-
+inline void draw_help(sf::RenderTarget& target, const sf::Font& font, sf::Vector2i position);
+inline float zoom_ratio = 1.0f;
 Config config;
 inline bool on_control = false;
 inline bool show_help = true;
@@ -40,8 +40,9 @@ int main() {
             case sf::Event::MouseWheelScrolled: {
                 auto& wheel_event = event.mouseWheelScroll;
                 if (wheel_event.wheel == sf::Mouse::VerticalWheel) {
-                    Vec2f mouse_pos = (Vec2f)sf::Mouse::getPosition(window);
-                    path.zoom(Helper::to_world(window, mouse_pos), 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
+                    auto mouse_pos = sf::Mouse::getPosition(window);
+                    Helper::zoom(window, window.mapPixelToCoords(mouse_pos), 1.0f + wheel_event.delta * ZOOM_FACTOR); // delta: 1 or -1
+                    zoom_ratio = 1.0f + wheel_event.delta * ZOOM_FACTOR;
                 }
             } break;
             case sf::Event::MouseButtonPressed: {
@@ -90,13 +91,13 @@ int main() {
         window.clear();
         window.draw(path);
         window.draw(path_editor);
-        if (show_help) draw_help(window, font, Helper::to_world(window, Vec2f(0, 0)));
+        if (show_help) draw_help(window, font, sf::Vector2i(0, 0));
         window.display();
     }
 }
 
-inline void draw_help(sf::RenderTarget& target, const sf::Font& font, Vec2f position) {
-    sf::Text text("\
+inline void draw_help(sf::RenderTarget& target, const sf::Font& font, sf::Vector2i position) {
+    static sf::Text text("\
   t: toogle help\n\
   a: switch to adding mode\n\
   s: switch to editing mode\n\
@@ -104,6 +105,6 @@ C-s: save to file\n\
 C-o: open file\n\
 Hold mouse right button and drag to move screen\n\
 Scroll up/down to zoom", font);
-    text.setPosition(position);
+    text.setPosition(target.mapPixelToCoords(position));
     target.draw(text);
 }

@@ -112,19 +112,14 @@ namespace Helper {
         return Vec2<T>{ x, y };
     }
 
-    inline Vec2f to_world(const sf::RenderTarget& target, Vec2f position) { // from screen coordinate to world coordinate
+    inline void zoom(sf::RenderTarget& target, Vec2f center, float ratio) {
+        (void)center;
         auto view = target.getView();
-        auto center = view.getCenter();
-        auto size = view.getSize();
-        return position + (center - size/2.0f);
+        // view.move((center - view.getCenter())*ratio);
+        view.zoom(ratio);
+        target.setView(view);
     }
 
-    inline Vec2f to_world(const sf::RenderTarget& target, float x, float y) { // from screen coordinate to world coordinate
-        auto view = target.getView();
-        auto center = view.getCenter();
-        auto size = view.getSize();
-        return Vec2f(x, y) + (center - size/2.0f);
-    }
 }
 
 inline std::istream& operator>>(std::istream& in, sf::Color& c) {

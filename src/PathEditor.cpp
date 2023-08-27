@@ -7,7 +7,7 @@ void PathEditor::handle_moving_event(sf::Event& event, sf::RenderWindow& window)
     static bool on_clicked = false;
     auto& joints      = current_editing_path->spline.joints;
     auto& joint_ctrls = current_editing_path->spline.joint_ctrls;
-    Vec2f mouse_pos   = Helper::to_world(window, (Vec2f)sf::Mouse::getPosition(window));
+    Vec2f mouse_pos   = window.mapPixelToCoords(sf::Mouse::getPosition(window));
     if (!on_clicked) object.type = None;
     for (size_t i = 0; i < joints.size(); i++) {
         if (Helper::distance(joints[i], mouse_pos) <= config.joint_radius) {
@@ -61,7 +61,7 @@ void PathEditor::handle_adding_event(sf::Event& event, sf::RenderWindow& window)
         break;
     default: break;
     }
-    Vec2f mouse_pos = Helper::to_world(window, (Vec2f)sf::Mouse::getPosition(window));
+    Vec2f mouse_pos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
     if (current_editing_path->contains(mouse_pos)) {
         float min_dis = 1e10;
         for (size_t i = 0; i < vArray.getVertexCount(); i++) {
@@ -110,6 +110,7 @@ void PathEditor::update_joint(Vec2f new_position) {
 void PathEditor::draw(sf::RenderTarget& target, sf::RenderStates state) const {
     switch (mode) {
     case Adding: {
+        draw_all_object(target, state);
         if (object.type == Vertex) {
             const auto& vArray = current_editing_path->spline.vArray;
             sf::CircleShape c(config.joint_radius);
@@ -126,42 +127,42 @@ void PathEditor::draw(sf::RenderTarget& target, sf::RenderStates state) const {
             Helper::draw_line(target, a, start_ctrl, sf::Color(ON_EDITING_OBJECT_COLOR));
             Helper::draw_line(target, a, end_ctrl, sf::Color(ON_EDITING_OBJECT_COLOR));
         }
-    } [[fallthrough]];
+    } break;
     case Moving: {
-        auto& joints = current_editing_path->spline.joints;
-        auto& joint_ctrls = current_editing_path->spline.joint_ctrls;
-        for (size_t i = 0; i < joint_ctrls.size(); i++) {
-            Vec2f size{ config.ctrl_point_size, config.ctrl_point_size };
-            sf::RectangleShape r(size);
-            if ((object.type == Joint      && i/2 == object.index  ) ||
-                (object.type == Joint_Ctrl && i/2 == object.index/2))
-                r.setFillColor(sf::Color(ON_EDITING_OBJECT_COLOR));
-            else
-                r.setFillColor(config.ctrl_point_color);
-            r.setOrigin(size / 2.0f);
-            r.setPosition(joint_ctrls[i]);
-            target.draw(r, state);
-        }
-        for (size_t i = 0; i < joints.size(); i++) {
-            size_t index_for_type = object.type == Joint ? object.index : object.index/2;
-            sf::CircleShape c(config.joint_radius);
-            c.setOrigin(config.joint_radius, config.joint_radius);
-            c.setPosition(joints[i]);
-            if (object.type != None && i == index_for_type)
-                c.setFillColor(sf::Color(ON_EDITING_OBJECT_COLOR));
-            else
-                c.setFillColor(config.joint_color);
-            target.draw(c, state);
-            Helper::draw_line(target,
-                    joints[i],
-                    joint_ctrls[2*i],
-                    object.type == None || index_for_type != i ? config.line_color : sf::Color(ON_EDITING_OBJECT_COLOR));
-            Helper::draw_line(target,
-                    joints[i],
-                    joint_ctrls[2*i+1],
-                    object.type == None || index_for_type != i ? config.line_color : sf::Color(ON_EDITING_OBJECT_COLOR));
-        }
+        if (object.type == None) draw_all_object(target, state);
+        else if (object.type == Joint) draw_all_object(target, state, object.index);
+        else if (object.type == Joint_Ctrl) draw_all_object(target, state, object.index/2);
     } break;
     default: break;
+    }
+}
+
+void PathEditor::draw_all_object(sf::RenderTarget& target, sf::RenderStates state, std::optional<size_t> on_editting_joint) const {
+    auto& joints = current_editing_path->spline.joints;
+    auto& joint_ctrls = current_editing_path->spline.joint_ctrls;
+    for (size_t i = 0; i < joint_ctrls.size(); i++) {
+        Vec2f size{ config.ctrl_point_size, config.ctrl_point_size };
+        sf::RectangleShape ctrl(size);
+        ctrl.setOrigin(size / 2.0f);
+        ctrl.setPosition(joint_ctrls[i]);
+        if (on_editting_joint && on_editting_joint.value() == i/2) ctrl.setFillColor(sf::Color(ON_EDITING_OBJECT_COLOR));
+        else ctrl.setFillColor(config.ctrl_point_color);
+        target.draw(ctrl, state);
+    }
+    for (size_t i = 0; i < joints.size(); i++) {
+        sf::CircleShape joint(config.joint_radius);
+        joint.setOrigin(config.joint_radius, config.joint_radius);
+        joint.setPosition(joints[i]);
+        if (on_editting_joint && on_editting_joint.value() == i) joint.setFillColor(sf::Color(ON_EDITING_OBJECT_COLOR));
+        else joint.setFillColor(config.joint_color);
+        Helper::draw_line(target,
+                joints[i],
+                joint_ctrls[2*i],
+                on_editting_joint && on_editting_joint.value() == i ? sf::Color(ON_EDITING_OBJECT_COLOR) : config.line_color);
+        Helper::draw_line(target,
+                joints[i],
+                joint_ctrls[2*i+1],
+                on_editting_joint && on_editting_joint.value() == i ? sf::Color(ON_EDITING_OBJECT_COLOR) : config.line_color);
+        target.draw(joint, state);
     }
 }
