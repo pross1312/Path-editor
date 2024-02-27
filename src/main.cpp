@@ -16,7 +16,7 @@ int main() {
     config.print();
 
     srand(time(0));
-    Path path(config.path_width, 0x485965ff);
+    Path path(config.path_width, 0x48596566);
     PathEditor path_editor(&path);
     sf::RenderWindow window(sf::VideoMode(config.screen_w, config.screen_h), "PathEditor");
     window.setFramerateLimit(FPS);

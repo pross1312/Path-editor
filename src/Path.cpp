@@ -65,13 +65,3 @@ void Path::zoom(Vec2f center, float ratio) {
     }
     update();
 }
-
-bool Path::contains(Vec2f point) const {
-    size_t n = spline.vArray.getVertexCount();
-    float min_dis = 1e9;
-    for (size_t i = 0; i < n; i++) {
-        float temp_dis = Helper::distance(point, spline.vArray[i].position);
-        if (temp_dis < min_dis) min_dis = temp_dis;
-    }
-    return min_dis <= width;
-}
