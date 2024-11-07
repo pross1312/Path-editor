@@ -34,25 +34,31 @@ void Path::update() {
     vArray[2*nVertices].color      = vArray[2*nVertices+1].color = sf::Color(color);
 }
 
-void Path::save(const char* fName) {
+bool Path::save(const char* fName) {
     std::ofstream fout(fName, std::ios::binary | std::ios::out);
-    if (!fout.is_open())
-        throw std::runtime_error("Can't open file to write.");
+    if (!fout.is_open()) {
+        printf("Can't open file %s\n", fName);
+        return false;
+    }
     fout.write((char*)&width, sizeof(width));
     fout.write((char*)&color, sizeof(color));
     fout << spline;
     fout.close();
+    return true;
 }
 
-void Path::load(const char* fName) {
+bool Path::load(const char* fName) {
     std::ifstream fin(fName, std::ios::binary | std::ios::in);
-    if (!fin.is_open())
-        throw std::runtime_error("Can't open file to read");
+    if (!fin.is_open()) {
+        printf("Can't open file %s\n", fName);
+        return false;
+    }
     fin.read((char*)&width, sizeof(width));
     fin.read((char*)&color, sizeof(color));
     fin >> spline;
     fin.close();
     update();
+    return true;
 }
 
 void Path::zoom(Vec2f center, float ratio) {

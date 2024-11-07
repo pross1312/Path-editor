@@ -3,6 +3,9 @@ A simple path editor with sfml
 Create a simple path editor for project genetic car.
 Path is constructed using bezier curve.
 
+## Demo
+![Demo image](image.png)
+
 ## Dependencies
 - [SFML](https://www.sfml-dev.org/)
 - [VictorMono font](https://rubjo.github.io/victor-mono/)

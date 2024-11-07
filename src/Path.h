@@ -13,8 +13,8 @@ struct Path: public sf::Drawable {
         target.draw(vArray, state);
         target.draw(spline, state);
     }
-	void save(const char* fName);
-	void load(const char* fName);
+	bool save(const char* fName);
+	bool load(const char* fName);
     void zoom(Vec2f center, float ratio);
 	void update();
     inline std::pair<sf::Vector2f, float> get_start_param() const { // return position and rotation needed
